@@ -1,7 +1,7 @@
 import numpy as np
 
-a = [1,2,3] * 3
+a = np.matrix(((1),(2),(1),(1)))
+a = a.T
+b = np.matrix(((2,0,3,0)))
 
-a[0] = 0
-
-print(a)
+print(np.dot(a,b))
