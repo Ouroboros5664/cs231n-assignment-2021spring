@@ -1,7 +1,9 @@
 import numpy as np
 
-a = np.matrix(((1),(2),(1),(1)))
-a = a.T
-b = np.matrix(((2,0,3,0)))
+a = np.array([[1,2],[3,4]])
 
-print(np.dot(a,b))
+b = np.zeros(a.shape[0])
+
+b = np.argmax(a, axis=1)
+
+print(b, np.argmax(a))
