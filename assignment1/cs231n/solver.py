@@ -147,6 +147,8 @@ class Solver(object):
 
         self._reset()
 
+        # print('batch_size:{}'.format(self.batch_size))
+
     def _reset(self):
         """
         Set up some book-keeping variables for optimization. Don't call this
@@ -258,6 +260,8 @@ class Solver(object):
         num_train = self.X_train.shape[0]
         iterations_per_epoch = max(num_train // self.batch_size, 1)
         num_iterations = self.num_epochs * iterations_per_epoch
+
+        print(num_train, iterations_per_epoch, num_iterations, self.num_epochs)
 
         for t in range(num_iterations):
             self._step()

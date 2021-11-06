@@ -1,8 +1,7 @@
 import numpy as np
 
-a = np.array((1,2,3,4,5)).reshape(-1,1)
+a = np.array(((-1,2,3),(1,2,3)))
 
-b = np.array((1,2,3,4,5))
+b = np.array(((3,2,1),(3,2,1)))
 
-
-print(a-b)
+print(np.maximum(a,0)*b)

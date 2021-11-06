@@ -29,11 +29,11 @@ $f(x_i,W)_j$为第$j$类的得分，$\Delta$通常取1，损失即考虑正确�
 $$
 L=\dfrac{1}{N}\sum_iL_i+\lambda ||W||^2
 $$
-我们需要求$\dfrac{\part L}{\part W_j}$，那么先考虑$\dfrac{\part L_i}{\part W_j}$即可，因为$\dfrac{\part L_i}{\part W_j}=\dfrac{1}{N}\sum L_i+2\lambda W_j$，考虑分类讨论
+我们需要求$\dfrac{\partial L}{\partial W_j}$，那么先考虑$\dfrac{\partial L_i}{\partial W_j}$即可，因为$\dfrac{\partial L_i}{\partial W_j}=\dfrac{1}{N}\sum L_i+2\lambda W_j$，考虑分类讨论
 $$
 \text{若 }j\ne y_i \quad  
-\dfrac{\part L_i}{\part W_j}= \dfrac{\part \sum_{j\ne y_i W_jX_i-W_{y_i}X+\Delta}}{\part W_j}=X_i \\
-\text{若 }j= y_i \quad  \dfrac{\part L_i}{\part W_j}=\sum-X_i
+\dfrac{\partial L_i}{\partial W_j}= \dfrac{\partial \sum_{j\ne y_i W_jX_i-W_{y_i}X+\Delta}}{\partial W_j}=X_i \\
+\text{若 }j= y_i \quad  \dfrac{\partial L_i}{\partial W_j}=\sum-X_i
 $$
 于是两个导数就求完了
 
