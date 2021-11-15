@@ -46,6 +46,15 @@ $$
 
 已知的是$x=\gamma x + b$
 
+让我们直接把所有知道的式子都写下来，更清楚一些
+$$
+\mu = \dfrac{1}{m}\sum_i^m x_i \\
+\sigma^2 = \dfrac{1}{m} \sum_i^m (x_i - \mu)^2 \\
+\hat{x}_i = \dfrac{x_i - \mu}{\sqrt{\sigma^2 + \epsilon}} \\
+y_i = \gamma \hat{x_i} + \beta
+$$
+
+
 那么$\dfrac{dl}{db}=\dfrac{dl}{dout} \cdot \dfrac{dout}{db}=\sum\dfrac{dl}{dout_i} \cdot \dfrac{dout_i}{db}=\sum\dfrac{dl}{dout_i}$，所以结果也就是把所有样本的dout相加
 
 同样地可以求$\dfrac{dl}{d\gamma}=\dfrac{dl}{dout} \cdot \dfrac{dout}{d\gamma}=\sum\dfrac{dl}{dout_i} \cdot \dfrac{dout_i}{d\gamma}=\sum\dfrac{dl}{dout_i}\cdot x_i$
@@ -65,4 +74,6 @@ $$
 这些就是计算图上节点各自的偏导了，那么我们要求$\dfrac{\part l}{\part x}$就把这些加起来就可以了，需要注意的是，有些偏导是需要对下标$\sum$的
 
 因为$\dfrac{\part l}{\part \mu}$，显然每一个$\hat{x}_i$都与$\mu$有关
+
+当然完全按照计算图来做的话会比较麻烦，因为求dx的过程太长了，可以利用向量运算简化掉这个过程 
 
