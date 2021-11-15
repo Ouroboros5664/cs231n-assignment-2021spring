@@ -163,6 +163,7 @@ class FullyConnectedNet(object):
         ############################################################################
         # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
         caches = []
+        dropout_caches = []
         forward_res = X
         for layer in range(self.num_layers - 1):
             W = self.params['W{}'.format(layer+1)]
@@ -180,7 +181,8 @@ class FullyConnectedNet(object):
                 ln_param = self.bn_params[layer]
                 res, cache = affine_ln_forward(forward_res, W, b, gamma, beta, ln_param)
             if self.use_dropout:
-                pass
+                res, dropout_cache = dropout_forward(res, self.dropout_param)
+                dropout_caches.append(dropout_cache)
             caches.append(cache)
             forward_res = res
         W = self.params['W{}'.format(self.num_layers)]
@@ -223,6 +225,8 @@ class FullyConnectedNet(object):
         grads['b{}'.format(self.num_layers)] = db
 
         for i in range(self.num_layers - 2, -1, -1):
+            if self.use_dropout:
+                dout = dropout_backward(dout, dropout_caches[i])
             if self.normalization == None:
                 dout, dw, db = affine_relu_backward(dout, caches[i])
                 dw += self.reg * self.params['W{}'.format(i+1)]
