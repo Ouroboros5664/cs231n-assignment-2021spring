@@ -43,10 +43,18 @@ def affine_bn_backward(dout, cache):
     return fc_out, dW, db, dgamma, dbeta
 
 def affine_ln_forward(x, w, b, gamma, beta, ln_param):
-    pass
+    fc_out, fc_cache = affine_forward(x, w, b)
+    ln_out, ln_cache = layernorm_forward(fc_out, gamma, beta, ln_param)
+    relu_out, relu_cache = relu_forward(ln_out)
+    cache = (fc_cache, ln_cache, relu_cache)
+    return relu_out, cache
 
 def affine_ln_backward(dout, cache):
-    pass
+    fc_cache, ln_cache, relu_cache = cache
+    relu_out = relu_backward(dout, relu_cache)
+    ln_out, dgamma, dbeta = layernorm_backward(relu_out, ln_cache)
+    fc_out, dW, db = affine_backward(ln_out, fc_cache)
+    return fc_out, dW, db, dgamma, dbeta
 
 pass
 

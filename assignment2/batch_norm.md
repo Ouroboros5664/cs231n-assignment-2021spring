@@ -57,7 +57,7 @@ $$
 
 那么$\dfrac{dl}{db}=\dfrac{dl}{dout} \cdot \dfrac{dout}{db}=\sum\dfrac{dl}{dout_i} \cdot \dfrac{dout_i}{db}=\sum\dfrac{dl}{dout_i}$，所以结果也就是把所有样本的dout相加
 
-同样地可以求$\dfrac{dl}{d\gamma}=\dfrac{dl}{dout} \cdot \dfrac{dout}{d\gamma}=\sum\dfrac{dl}{dout_i} \cdot \dfrac{dout_i}{d\gamma}=\sum\dfrac{dl}{dout_i}\cdot x_i$
+同样地可以求$\dfrac{dl}{d\gamma}=\dfrac{dl}{dout} \cdot \dfrac{dout}{d\gamma}=\sum\dfrac{dl}{dout_i} \cdot \dfrac{dout_i}{d\gamma}=\sum\dfrac{dl}{dout_i}\cdot \hat{x_i}$
 
 ![img](https://pic4.zhimg.com/80/v2-b8687c2cf7323223dff2eeff377bce8f_720w.jpg)
 
@@ -73,7 +73,18 @@ $$
 $$
 这些就是计算图上节点各自的偏导了，那么我们要求$\dfrac{\part l}{\part x}$就把这些加起来就可以了，需要注意的是，有些偏导是需要对下标$\sum$的
 
+**特别注意**，$\dfrac{\part l}{\part \sigma^2} = \sum \dfrac{\part l}{\part \hat{x_i}}\cdot\dfrac{\part \hat{x_i}}{\part \sigma^2}$，这里要记得求和。**时刻记得**导数的size要匹配。
+
 因为$\dfrac{\part l}{\part \mu}$，显然每一个$\hat{x}_i$都与$\mu$有关
 
 当然完全按照计算图来做的话会比较麻烦，因为求dx的过程太长了，可以利用向量运算简化掉这个过程 
 
+![image-20211115213727569](https://i.loli.net/2021/11/15/mMwv42jrI1GLxg3.png)
+
+当然也可以按照这张图推导，相关式子如下（大概这就是为什么我找到的资料都是两项加起来的了？）
+$$
+\begin{align}
+& \mu=\frac{1}{N}\sum_{k=1}^N x_k  &  v=\frac{1}{N}\sum_{k=1}^N (x_k-\mu)^2 \\
+& \sigma=\sqrt{v+\epsilon}         &  y_i=\frac{x_i-\mu}{\sigma}
+\end{align}
+$$

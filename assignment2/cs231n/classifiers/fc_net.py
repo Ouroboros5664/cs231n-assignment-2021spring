@@ -225,9 +225,23 @@ class FullyConnectedNet(object):
         for i in range(self.num_layers - 2, -1, -1):
             if self.normalization == None:
                 dout, dw, db = affine_relu_backward(dout, caches[i])
-                dw += self.reg * self.params['W' + str(i + 1)]
-                grads['W' + str(i + 1)] = dw
-                grads['b' + str(i + 1)] = db
+                dw += self.reg * self.params['W{}'.format(i+1)]
+                grads['W{}'.format(i+1)] = dw
+                grads['b{}'.format(i+1)] = db
+            elif self.normalization == 'batchnorm':
+                dout, dw, db, dgamma, dbeta = affine_bn_backward(dout, caches[i])
+                dw += self.reg * self.params['W{}'.format(i+1)]
+                grads['W{}'.format(i+1)] = dw
+                grads['b{}'.format(i+1)] = db
+                grads['gamma{}'.format(i+1)] = dgamma
+                grads['beta{}'.format(i+1)] = dbeta
+            elif self.normalization == 'layernorm':
+                dout, dw, db, dgamma, dbeta = affine_ln_backward(dout, caches[i])
+                dw += self.reg * self.params['W{}'.format(i+1)]
+                grads['W{}'.format(i+1)] = dw
+                grads['b{}'.format(i+1)] = db
+                grads['gamma{}'.format(i+1)] = dgamma
+                grads['beta{}'.format(i+1)] = dbeta
 
         # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
         ############################################################################
