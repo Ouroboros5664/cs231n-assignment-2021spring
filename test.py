@@ -9,4 +9,4 @@ a = np.array(((1,2,3),(4,5,6)))
 
 b = np.array((1,2)).reshape(-1,1)
 
-print(a / b)
+print(np.argmax(a[0:2,0:2]))
