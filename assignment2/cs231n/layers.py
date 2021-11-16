@@ -812,7 +812,10 @@ def spatial_batchnorm_forward(x, gamma, beta, bn_param):
     # Your implementation should be very short; ours is less than five lines. #
     ###########################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
-
+    N, C, H, W = x.shape
+    x_trans = np.transpose(x, (0,2,3,1)).reshape(-1,C)
+    out, cache = batchnorm_forward(x_trans, gamma, beta, bn_param)
+    out = np.transpose(out.reshape(N,H,W,C), (0,3,1,2))
     pass
 
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
@@ -845,7 +848,11 @@ def spatial_batchnorm_backward(dout, cache):
     # Your implementation should be very short; ours is less than five lines. #
     ###########################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
-
+    N, C, H, W = dout.shape
+    dout_trans = np.transpose(dout, (0,2,3,1)).reshape(-1,C)
+    dx, dgamma, dbeta = batchnorm_backward_alt(dout_trans, cache)
+    dx = dx.reshape((N,H,W,C))
+    dx = np.transpose(dx, (0,3,1,2))
     pass
 
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
@@ -886,6 +893,15 @@ def spatial_groupnorm_forward(x, gamma, beta, G, gn_param):
     # and layer normalization!                                                #
     ###########################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
+    N, C, H, W = x.shape
+    x_trans = x.reshape(N, G, C // G, H, W)
+    mean = np.mean(x_trans, axis=(2,3,4), keepdims=True)
+    var = np.var(x_trans, axis=(2,3,4), keepdims=True) + eps
+    std = np.sqrt(var)
+    x_norm = (x_trans - mean) / std
+    x_norm = x_norm.reshape(x.shape)
+    out = gamma*x_norm + beta
+    cache = (x, x_norm, gamma, mean, var, std, G)
 
     pass
 
@@ -915,6 +931,22 @@ def spatial_groupnorm_backward(dout, cache):
     # This will be extremely similar to the layer norm implementation.        #
     ###########################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
+
+    x, x_norm, gamma, mean, var, std, G = cache
+    N, C, H, W = dout.shape
+    dbeta = np.sum(dout, axis=(0,2,3)).reshape(1,C,1,1)
+    dgamma = np.sum(x_norm * dout, axis=(0,2,3)).reshape(1,C,1,1)
+    x_trans = x.reshape(N, G, C//G, H, W)
+    
+    dhatx = dout * gamma
+    dhatx = dhatx.reshape(N, G, C // G, H, W)
+    M = C // G * H * W
+    dsigma = np.sum(dhatx * (x_trans - mean) * -0.5 * (var ** -1.5), axis=(2,3,4))
+    dmu = np.sum(dhatx * -1 / std, axis=(2,3,4)) + dsigma * -2 * np.sum(x_trans - mean, axis=(2,3,4)) / M
+    dsigma = dsigma.reshape(N, G, 1, 1, 1)
+    dmu = dmu.reshape(N, G, 1, 1, 1)
+    dx = dhatx / std + dsigma * 2 * (x_trans - mean) / M + dmu / M
+    dx = dx.reshape(dout.shape)
 
     pass
 
