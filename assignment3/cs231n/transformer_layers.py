@@ -1,3 +1,4 @@
+from numpy import matrix
 import torch
 import torch.nn as nn
 from torch.nn import functional as F
@@ -37,7 +38,10 @@ class PositionalEncoding(nn.Module):
         # less than 5 lines of code.                                               #
         ############################################################################
         # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
-
+        position = torch.arange(0, max_len).unsqueeze(1)
+        exp_term = torch.exp(torch.arange(0, embed_dim, 2) * -(math.log(10000) / embed_dim))
+        pe[:, :, 0::2] = torch.sin(position * exp_term)
+        pe[:, :, 1::2] = torch.cos(position * exp_term)
         pass
 
         # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
@@ -69,7 +73,8 @@ class PositionalEncoding(nn.Module):
         # afterward. This should only take a few lines of code.                    #
         ############################################################################
         # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
-
+        output = x + self.pe[:, :S, :]
+        output = self.dropout(output)
         pass
 
         # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
@@ -117,6 +122,8 @@ class MultiHeadAttention(nn.Module):
         self.query = nn.Linear(embed_dim, embed_dim)
         self.value = nn.Linear(embed_dim, embed_dim)
         self.proj = nn.Linear(embed_dim, embed_dim)
+        # for p in self.key.parameters():
+        #     print(p)
         
         ############################################################################
         # TODO: Initialize any remaining layers and parameters to perform the      #
@@ -125,7 +132,9 @@ class MultiHeadAttention(nn.Module):
         # solution is less than 5 lines.                                           #
         ############################################################################
         # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
-
+        self.num_heads = num_heads
+        self.dropout = nn.Dropout(dropout)
+        self.scale = torch.sqrt(torch.FloatTensor([embed_dim // num_heads]))
         pass
 
         # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
@@ -173,7 +182,26 @@ class MultiHeadAttention(nn.Module):
         #     function masked_fill may come in handy.                              #
         ############################################################################
         # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
+        head = self.num_heads
 
+        Q = self.query(query).view(N, S, head, D // head).permute(0, 2, 1, 3)
+        K = self.key(key).view(N, T, head, D // head).permute(0, 2, 1, 3)
+        V = self.value(value).view(N, T, head, D // head).permute(0, 2, 1, 3)
+
+        matrix_a = torch.matmul(Q, K.permute(0, 1, 3, 2)) / self.scale
+        # get matrix a with size n * m, which n is the length, m is each attention alpha
+        if attn_mask is not None:
+            matrix_a = matrix_a.masked_fill(attn_mask == 0, -float('inf'))
+        
+        matrix_a = torch.softmax(matrix_a, dim=-1)
+
+        matrix_a = self.dropout(matrix_a)
+        # print(matrix_a)
+
+        output = torch.matmul(matrix_a, V).permute(0, 2, 1, 3).contiguous()
+        output = output.view(N, -1, D)
+        # print(output)
+        output = self.proj(output)
         pass
 
         # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****

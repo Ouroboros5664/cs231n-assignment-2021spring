@@ -147,6 +147,32 @@ class CaptioningRNN:
         # in your implementation, if needed.                                       #
         ############################################################################
         # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
+        init_hidden_state, init_cache = affine_forward(features, W_proj, b_proj)
+        captions_in_embed, captions_in_embed_cache = word_embedding_forward(captions_in, W_embed)
+        # captions_out_embed, captions_out_embed_cache = word_embedding_forward(captions_out, W_embed)
+        rnn_res, rnn_cache = rnn_forward(captions_in_embed, init_hidden_state, Wx, Wh, b)
+
+        res, res_cache = temporal_affine_forward(rnn_res, W_vocab, b_vocab)
+
+        loss, dout = temporal_softmax_loss(res, captions_out, mask, verbose=False)
+
+        dx, dw, db = temporal_affine_backward(dout, res_cache)
+        
+        grads['W_vocab'] = dw
+        grads['b_vocab'] = db
+
+        dx, dh0, dWx, dWh, db = rnn_backward(dx, rnn_cache)
+
+        grads['Wx'] = dWx
+        grads['Wh'] = dWh
+        grads['b'] = db
+
+        dW = word_embedding_backward(dx, captions_in_embed_cache)
+        grads['W_embed'] = dW
+
+        dx, dw, db = affine_backward(dh0, init_cache)
+        grads['W_proj'] = dw
+        grads['b_proj'] = db
 
         pass
 
@@ -215,7 +241,15 @@ class CaptioningRNN:
         # you are using an LSTM, initialize the first cell state to zeros.        #
         ###########################################################################
         # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
-
+        state, _ = affine_forward(features, W_proj, b_proj)
+        word = self.word_to_idx['<START>']
+        word = W_embed[word]
+        for i in range(max_length):
+            state, _ = rnn_step_forward(word, state, Wx, Wh, b)
+            scores, _ = affine_forward(state, W_vocab, b_vocab)
+            new_caption = np.argmax(scores, axis=1)
+            captions[:,i] = new_caption
+            word = W_embed[new_caption]
         pass
 
         # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****

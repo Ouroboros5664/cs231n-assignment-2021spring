@@ -33,7 +33,12 @@ def compute_saliency_maps(X, y, model):
     # the gradients with a backward pass.                                        #
     ##############################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
-
+    scores = model(X)
+    correct_scores = scores.gather(1, y.view(-1, 1)).squeeze()
+    scores_sum = correct_scores.sum()
+    scores_sum.backward()
+    X_grad_abs = torch.abs(X.grad)
+    saliency, _ = torch.max(X_grad_abs, dim=1)
     pass
 
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
@@ -75,7 +80,15 @@ def make_fooling_image(X, target_y, model):
     # You can print your progress over iterations to check your algorithm.       #
     ##############################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
-
+    while True:
+        X_fooling.retain_grad()
+        scores = model(X_fooling)
+        if scores.argmax() == target_y:
+            break
+        score = scores[:, target_y]
+        score.backward()
+        dX = learning_rate * X_fooling.grad / torch.linalg.norm(X_fooling.grad)
+        X_fooling = X_fooling + dX
     pass
 
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
@@ -93,7 +106,13 @@ def class_visualization_update_step(img, model, target_y, l2_reg, learning_rate)
     # Be very careful about the signs of elements in your code.            #
     ########################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
-
+    # img.requires_grad()
+    # img.retain_grad()
+    scores = model(img)
+    score = scores[:, target_y] - l2_reg * torch.linalg.norm(img)
+    score.backward()
+    dX = learning_rate * img.grad
+    img = img + dX
     pass
 
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
